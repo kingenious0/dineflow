@@ -207,3 +207,20 @@ def cancel(order_id):
         db.session.commit()
         flash(f'Order {order.order_number} cancelled.', 'info')
     return redirect(url_for('orders.index'))
+
+@orders_bp.route('/<int:order_id>/delete', methods=['POST'])
+@login_required
+def delete(order_id):
+    order = Order.query.get_or_404(order_id)
+    ord_num = order.order_number
+    if order.table_id:
+        table = RestaurantTable.query.get(order.table_id)
+        if table and table.status == 'Occupied':
+            table.status = 'Available'
+    
+    OrderItem.query.filter_by(order_id=order.id).delete()
+    db.session.delete(order)
+    db.session.commit()
+    flash(f'Order {ord_num} deleted successfully.', 'success')
+    return redirect(url_for('orders.index'))
+

@@ -112,9 +112,16 @@
                         <td class="text-end">
                             <div class="btn-group btn-group-sm">
                                 <a href="{{ url_for('orders.view', order_id=order.id) }}" class="btn btn-light border" title="View"><i class="bi bi-eye"></i></a>
+                                {% if order.status not in ('Completed', 'Cancelled') %}
+                                <a href="{{ url_for('orders.edit', order_id=order.id) }}" class="btn btn-light border" title="Edit"><i class="bi bi-pencil"></i></a>
+                                {% endif %}
                                 {% if not order.is_paid and order.status != 'Cancelled' %}
                                 <a href="{{ url_for('payments.process', order_id=order.id) }}" class="btn btn-sm btn-success px-2" title="Process Payment"><i class="bi bi-cash-coin me-1"></i>Pay</a>
                                 {% endif %}
+                                <form action="{{ url_for('orders.delete', order_id=order.id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete order {{ order.order_number }}?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="btn btn-light border text-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                                </form>
                             </div>
                         </td>
                     </tr>
