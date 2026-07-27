@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Restaurant Tables{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-grid-3x3-gap me-2 text-primary-brand"></i>Restaurant Tables</h1>
+        <p class="text-muted mb-0">Live floor plan and table availability overview.</p>
+    </div>
+    {% if current_user.is_manager() %}
+    <div>
+        <a href="{{ url_for('tables.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i> Add Table
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Table Grid Visual Layout -->
+<div class="row g-3 mb-4">
+    {% if tables %}
+        {% for table in tables %}
+        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+            <div class="card h-100 table-card {{ table.status.lower() }} shadow-sm text-center p-3">
+                <div class="table-num display-6 fw-bold mb-1">{{ table.table_number }}</div>
+                <div class="text-muted small mb-2"><i class="bi bi-people me-1"></i>Cap: {{ table.capacity }}</div>
+
+                <span class="badge badge-table-{{ table.status.lower() }} mb-3">
+                    {{ table.status }}
+                </span>
+
+                {% if table.status == 'Occupied' and table.active_order %}
+                <a href="{{ url_for('orders.view', order_id=table.active_order.id) }}" class="btn btn-xs btn-outline-danger w-100 mb-2 py-1" style="font-size:0.75rem;">
+                    Order {{ table.active_order.order_number }}
+                </a>
+                {% endif %}
+
+                {% if current_user.is_manager() %}
+                <div class="d-flex justify-content-center gap-1 mt-auto pt-2 border-top">
+                    <a href="{{ url_for('tables.edit', table_id=table.id) }}" class="btn btn-xs btn-light border p-1" title="Edit"><i class="bi bi-pencil"></i></a>
+                    <form method="POST" action="{{ url_for('tables.delete', table_id=table.id) }}" class="d-inline" onsubmit="return confirm('Delete table {{ table.table_number }}?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-xs btn-light border text-danger p-1" title="Delete"><i class="bi bi-trash"></i></button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="card p-5 text-center text-muted shadow-sm-custom">
+                <i class="bi bi-grid-3x3-gap display-4 d-block mb-2"></i>
+                <h5>No Restaurant Tables Configured</h5>
+                <p>Click "Add Table" above to register dining tables.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Table Legend -->
+<div class="card shadow-sm-custom p-3">
+    <div class="d-flex align-items-center gap-4 flex-wrap text-muted small">
+        <span class="fw-bold text-dark">Legend:</span>
+        <span><i class="bi bi-circle-fill text-success me-1"></i> Available</span>
+        <span><i class="bi bi-circle-fill text-danger me-1"></i> Occupied (Order in progress)</span>
+        <span><i class="bi bi-circle-fill text-warning me-1"></i> Reserved</span>
+    </div>
+</div>
+{% endblock %}

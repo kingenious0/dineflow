@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Restaurant Settings{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-gear me-2 text-primary-brand"></i>Restaurant Settings</h1>
+        <p class="text-muted mb-0">Configure restaurant profile, receipt branding, tax rates, and system features.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm-custom">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 text-secondary"><i class="bi bi-sliders me-2"></i>Global Configuration</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('settings.index') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <!-- Business Info -->
+                    <h6 class="text-primary-brand fw-bold mb-3"><i class="bi bi-building me-1"></i> Business Profile</h6>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="business_name" class="form-label">Restaurant Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="business_name" name="business_name" value="{{ settings.business_name }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="business_phone" class="form-label">Contact Phone</label>
+                            <input type="text" class="form-control" id="business_phone" name="business_phone" value="{{ settings.business_phone or '' }}">
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="business_email" class="form-label">Contact Email</label>
+                            <input type="email" class="form-control" id="business_email" name="business_email" value="{{ settings.business_email or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="business_tagline" class="form-label">Tagline / Motto</label>
+                            <input type="text" class="form-control" id="business_tagline" name="business_tagline" value="{{ settings.business_tagline or '' }}" placeholder="e.g. Delicious Flavors Daily">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="business_address" class="form-label">Physical Address</label>
+                        <input type="text" class="form-control" id="business_address" name="business_address" value="{{ settings.business_address or '' }}" placeholder="e.g. Plot 14 Commercial St, Accra">
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Receipt & Financial Defaults -->
+                    <h6 class="text-primary-brand fw-bold mb-3"><i class="bi bi-receipt me-1"></i> Receipt &amp; Billing Prefixes</h6>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <label for="order_prefix" class="form-label">Order Prefix</label>
+                            <input type="text" class="form-control" id="order_prefix" name="order_prefix" value="{{ settings.order_prefix or 'ORD-' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="receipt_prefix" class="form-label">Receipt Prefix</label>
+                            <input type="text" class="form-control" id="receipt_prefix" name="receipt_prefix" value="{{ settings.receipt_prefix or 'RCP-' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="currency" class="form-label">Currency Symbol</label>
+                            <input type="text" class="form-control" id="currency" name="currency" value="{{ settings.currency or 'GHS' }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="tax_rate" class="form-label">Tax Rate (%)</label>
+                            <input type="number" step="0.01" min="0" max="100" class="form-control" id="tax_rate" name="tax_rate" value="{{ settings.tax_rate or 0 }}">
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Feature Toggles -->
+                    <h6 class="text-primary-brand fw-bold mb-3"><i class="bi bi-toggle-on me-1"></i> Operational Features</h6>
+                    <div class="mb-4">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="allow_takeaway" name="allow_takeaway" {% if settings.allow_takeaway %}checked{% endif %}>
+                            <label class="form-check-label fw-medium" for="allow_takeaway">Enable Takeaway Orders</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="allow_delivery" name="allow_delivery" {% if settings.allow_delivery %}checked{% endif %}>
+                            <label class="form-check-label fw-medium" for="allow_delivery">Enable Delivery Orders</label>
+                        </div>
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" id="auto_print_receipt" name="auto_print_receipt" {% if settings.auto_print_receipt %}checked{% endif %}>
+                            <label class="form-check-label fw-medium" for="auto_print_receipt">Auto-Open Print Dialog After Payment</label>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i> Save Configuration</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Orders{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-receipt me-2 text-primary-brand"></i>Orders</h1>
+        <p class="text-muted mb-0">Manage dine-in, takeaway, and delivery restaurant orders.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('orders.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i> New Order
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Search & Filter Bar -->
+<div class="card shadow-sm-custom mb-4">
+    <div class="card-body p-3">
+        <form method="GET" action="{{ url_for('orders.index') }}" class="row g-2 align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Search order number..." value="{{ search }}">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="Open" {% if status_filter == 'Open' %}selected{% endif %}>Open</option>
+                    <option value="In Progress" {% if status_filter == 'In Progress' %}selected{% endif %}>In Progress</option>
+                    <option value="Ready" {% if status_filter == 'Ready' %}selected{% endif %}>Ready</option>
+                    <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+                    <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="order_type" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="Dine-In" {% if type_filter == 'Dine-In' %}selected{% endif %}>Dine-In</option>
+                    <option value="Takeaway" {% if type_filter == 'Takeaway' %}selected{% endif %}>Takeaway</option>
+                    <option value="Delivery" {% if type_filter == 'Delivery' %}selected{% endif %}>Delivery</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-secondary w-100"><i class="bi bi-filter"></i> Filter</button>
+                <a href="{{ url_for('orders.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card shadow-sm-custom">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Type</th>
+                    <th>Table / Guest</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Payment</th>
+                    <th>Date &amp; Time</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if orders.items %}
+                    {% for order in orders.items %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('orders.view', order_id=order.id) }}" class="fw-bold text-dark">
+                                {{ order.order_number }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border">
+                                <i class="bi bi-{% if order.order_type == 'Dine-In' %}cup-straw{% elif order.order_type == 'Takeaway' %}bag-check{% else %}truck{% endif %} me-1"></i>
+                                {{ order.order_type }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if order.restaurant_table %}
+                                <span class="fw-medium text-secondary"><i class="bi bi-grid me-1"></i>{{ order.restaurant_table.table_number }}</span>
+                            {% elif order.customer %}
+                                <span>{{ order.customer.full_name }}</span>
+                            {% else %}
+                                <span class="text-muted">Walk-in</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-secondary rounded-pill">{{ order.total_items }} items</span></td>
+                        <td class="fw-bold text-dark">GH₵ {{ "%.2f"|format(order.total_amount) }}</td>
+                        <td>
+                            <span class="badge badge-status-{{ order.status.lower().replace(' ', '-') }}">
+                                {{ order.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if order.is_paid %}
+                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Paid</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark"><i class="bi bi-clock me-1"></i>Unpaid</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted small">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('orders.view', order_id=order.id) }}" class="btn btn-light border" title="View"><i class="bi bi-eye"></i></a>
+                                {% if not order.is_paid and order.status != 'Cancelled' %}
+                                <a href="{{ url_for('payments.process', order_id=order.id) }}" class="btn btn-sm btn-success px-2" title="Process Payment"><i class="bi bi-cash-coin me-1"></i>Pay</a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">No orders found.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if orders.pages > 1 %}
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+        <small class="text-muted">Page {{ orders.page }} of {{ orders.pages }}</small>
+        <ul class="pagination pagination-sm mb-0">
+            {% if orders.has_prev %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('orders.index', page=orders.prev_num, search=search, status=status_filter, order_type=type_filter) }}">Previous</a></li>
+            {% endif %}
+            {% if orders.has_next %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('orders.index', page=orders.next_num, search=search, status=status_filter, order_type=type_filter) }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

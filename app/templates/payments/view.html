@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}Payment Details{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-cash-coin me-2 text-primary-brand"></i>Payment Record</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('payments.index') }}">Payments</a></li>
+                <li class="breadcrumb-item active">Order {{ payment.order.order_number }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm-custom">
+            <div class="card-header bg-white text-center py-3">
+                <i class="bi bi-check-circle-fill text-success fs-1"></i>
+                <h4 class="fw-bold text-dark mt-2 mb-0">Payment Completed</h4>
+                <p class="text-muted small">Order {{ payment.order.order_number }}</p>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between py-3">
+                        <span class="text-muted">Payment Method</span>
+                        <span class="fw-bold">{{ payment.payment_method }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between py-3">
+                        <span class="text-muted">Amount Paid</span>
+                        <span class="fw-bold text-success">GH₵ {{ "%.2f"|format(payment.amount_paid) }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between py-3">
+                        <span class="text-muted">Change Given</span>
+                        <span class="fw-bold">GH₵ {{ "%.2f"|format(payment.change_given or 0) }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between py-3">
+                        <span class="text-muted">Reference</span>
+                        <span class="fw-bold">{{ payment.reference or 'N/A' }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between py-3">
+                        <span class="text-muted">Processed By</span>
+                        <span class="fw-bold">{{ payment.cashier.full_name if payment.cashier else '-' }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between py-3">
+                        <span class="text-muted">Date &amp; Time</span>
+                        <span class="fw-bold">{{ payment.paid_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-footer bg-white text-center p-3">
+                <a href="{{ url_for('orders.view', order_id=payment.order_id) }}" class="btn btn-outline-secondary me-2">
+                    <i class="bi bi-eye me-1"></i> View Order
+                </a>
+                {% if payment.order.receipt %}
+                <a href="{{ url_for('receipts.view', receipt_id=payment.order.receipt.id) }}" class="btn btn-primary">
+                    <i class="bi bi-file-earmark-text me-1"></i> View Receipt
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

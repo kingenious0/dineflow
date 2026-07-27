@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Print Receipt {{ receipt.receipt_number }}</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            width: 300px;
+            margin: 0 auto;
+            padding: 15px;
+            font-size: 13px;
+            line-height: 1.4;
+            color: #000;
+        }
+        .text-center { text-align: center; }
+        .text-end { text-align: right; }
+        .fw-bold { font-weight: bold; }
+        .border-bottom { border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 8px; }
+        .border-top { border-top: 1px dashed #000; padding-top: 8px; margin-top: 8px; }
+        table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+        th, td { text-align: left; padding: 2px 0; }
+        .flex { display: flex; justify-content: space-between; }
+        @media print {
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body onload="window.print()">
+
+    <div class="text-center border-bottom">
+        <div class="fw-bold" style="font-size: 16px;">{{ settings.business_name }}</div>
+        <div>{{ settings.business_address or 'Ghana' }}</div>
+        <div>Tel: {{ settings.business_phone or '-' }}</div>
+    </div>
+
+    <div class="flex">
+        <span>Receipt: {{ receipt.receipt_number }}</span>
+    </div>
+    <div class="flex">
+        <span>Order: {{ receipt.order.order_number }}</span>
+        <span>{{ receipt.order.order_type }}</span>
+    </div>
+    <div class="flex border-bottom">
+        <span>Date: {{ receipt.issued_at.strftime('%Y-%m-%d %H:%M') }}</span>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th class="text-center">Qty</th>
+                <th class="text-end">Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in receipt.order.items %}
+            <tr>
+                <td>{{ item.item_name }}</td>
+                <td class="text-center">{{ item.quantity }}</td>
+                <td class="text-end">GH₵ {{ "%.2f"|format(item.line_total) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="border-top">
+        <div class="flex">
+            <span>Subtotal:</span>
+            <span>GH₵ {{ "%.2f"|format(receipt.subtotal) }}</span>
+        </div>
+        {% if receipt.tax_amount > 0 %}
+        <div class="flex">
+            <span>Tax:</span>
+            <span>GH₵ {{ "%.2f"|format(receipt.tax_amount) }}</span>
+        </div>
+        {% endif %}
+        <div class="flex fw-bold" style="font-size: 15px; margin-top: 4px;">
+            <span>TOTAL:</span>
+            <span>GH₵ {{ "%.2f"|format(receipt.total_amount) }}</span>
+        </div>
+    </div>
+
+    <div class="border-top">
+        <div class="flex">
+            <span>Paid ({{ receipt.payment_method }}):</span>
+            <span>GH₵ {{ "%.2f"|format(receipt.amount_paid) }}</span>
+        </div>
+        <div class="flex">
+            <span>Change:</span>
+            <span>GH₵ {{ "%.2f"|format(receipt.change_given or 0) }}</span>
+        </div>
+    </div>
+
+    <div class="text-center border-top" style="margin-top: 15px;">
+        <div>Thank you for dining with us!</div>
+        <div>Please call again.</div>
+    </div>
+
+    <div class="text-center no-print" style="margin-top: 20px;">
+        <button onclick="window.print()">Print Again</button>
+        <button onclick="window.close()">Close</button>
+    </div>
+
+</body>
+</html>

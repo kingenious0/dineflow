@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Receipt {{ receipt.receipt_number }}{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-file-earmark-text me-2 text-primary-brand"></i>Receipt {{ receipt.receipt_number }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('receipts.index') }}">Receipts</a></li>
+                <li class="breadcrumb-item active">{{ receipt.receipt_number }}</li>
+            </ol>
+        </nav>
+    </div>
+    <div>
+        <a href="{{ url_for('receipts.print_receipt', receipt_id=receipt.id) }}" target="_blank" class="btn btn-primary">
+            <i class="bi bi-printer me-1"></i> Print Receipt
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm-custom p-4">
+            <!-- Receipt Header -->
+            <div class="text-center pb-3 border-bottom mb-3">
+                <h3 class="fw-bold text-dark mb-0">{{ settings.business_name }}</h3>
+                <p class="text-muted small mb-1">{{ settings.business_address or 'Ghana' }}</p>
+                <p class="text-muted small mb-0">Tel: {{ settings.business_phone or '-' }} | Email: {{ settings.business_email or '-' }}</p>
+            </div>
+
+            <!-- Receipt Meta -->
+            <div class="d-flex justify-content-between small text-muted mb-3">
+                <div>
+                    <div><strong>Receipt #:</strong> {{ receipt.receipt_number }}</div>
+                    <div><strong>Order #:</strong> {{ receipt.order.order_number }}</div>
+                    <div><strong>Order Type:</strong> {{ receipt.order.order_type }}</div>
+                </div>
+                <div class="text-end">
+                    <div><strong>Date:</strong> {{ receipt.issued_at.strftime('%Y-%m-%d') }}</div>
+                    <div><strong>Time:</strong> {{ receipt.issued_at.strftime('%H:%M:%S') }}</div>
+                    <div><strong>Cashier:</strong> {{ receipt.cashier.full_name.split(' ')[0] if receipt.cashier else 'System' }}</div>
+                </div>
+            </div>
+
+            <!-- Line Items Table -->
+            <table class="table table-sm border-top border-bottom mb-3">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th class="text-center">Qty</th>
+                        <th class="text-end">Price</th>
+                        <th class="text-end">Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in receipt.order.items %}
+                    <tr>
+                        <td>{{ item.item_name }}</td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-end">GH₵ {{ "%.2f"|format(item.unit_price) }}</td>
+                        <td class="text-end fw-bold">GH₵ {{ "%.2f"|format(item.line_total) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <!-- Totals Summary -->
+            <div class="row justify-content-end mb-3">
+                <div class="col-6">
+                    <div class="d-flex justify-content-between mb-1 small">
+                        <span>Subtotal:</span>
+                        <span>GH₵ {{ "%.2f"|format(receipt.subtotal) }}</span>
+                    </div>
+                    {% if receipt.tax_amount > 0 %}
+                    <div class="d-flex justify-content-between mb-1 small">
+                        <span>Tax:</span>
+                        <span>GH₵ {{ "%.2f"|format(receipt.tax_amount) }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="d-flex justify-content-between fs-5 fw-bold text-dark border-top pt-2">
+                        <span>TOTAL:</span>
+                        <span class="text-primary-brand">GH₵ {{ "%.2f"|format(receipt.total_amount) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1 small text-muted mt-2">
+                        <span>Payment Method:</span>
+                        <span>{{ receipt.payment_method }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1 small text-muted">
+                        <span>Amount Tendered:</span>
+                        <span>GH₵ {{ "%.2f"|format(receipt.amount_paid) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1 small text-muted">
+                        <span>Change Given:</span>
+                        <span>GH₵ {{ "%.2f"|format(receipt.change_given or 0) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Receipt Footer -->
+            <div class="text-center pt-3 border-top text-muted small">
+                <p class="mb-1"><em>Thank you for dining with us! Please call again.</em></p>
+                <p class="mb-0">&copy; {{ settings.business_name }} — DineFlow POS</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

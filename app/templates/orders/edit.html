@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Order {{ order.order_number }}{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-pencil-square me-2 text-primary-brand"></i>Edit Order {{ order.order_number }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('orders.index') }}">Orders</a></li>
+                <li class="breadcrumb-item active">Edit {{ order.order_number }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm-custom">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 text-secondary">Edit Order Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('orders.edit', order_id=order.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Order Status</label>
+                            <select class="form-select" id="status" name="status">
+                                <option value="Open" {% if order.status == 'Open' %}selected{% endif %}>Open</option>
+                                <option value="In Progress" {% if order.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                <option value="Ready" {% if order.status == 'Ready' %}selected{% endif %}>Ready</option>
+                                <option value="Completed" {% if order.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="customer_id" class="form-label">Customer</label>
+                            <select class="form-select" id="customer_id" name="customer_id">
+                                <option value="">Walk-in Customer</option>
+                                {% for c in customers %}
+                                <option value="{{ c.id }}" {% if order.customer_id == c.id %}selected{% endif %}>{{ c.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="notes" class="form-label">Kitchen Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3">{{ order.notes or '' }}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('orders.view', order_id=order.id) }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i> Update Order</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

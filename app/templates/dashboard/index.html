@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-speedometer2 me-2 text-primary-brand"></i>Dashboard</h1>
+        <p class="text-muted mb-0">Overview of today's restaurant operations and sales metrics.</p>
+    </div>
+    <div>
+        <a href="{{ url_for('orders.create') }}" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> New Order
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- ── Top KPI Stat Cards ────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+    <!-- Today's Revenue -->
+    <div class="col-md-3">
+        <div class="stat-card bg-primary-gradient shadow-sm">
+            <i class="bi bi-cash-stack stat-icon"></i>
+            <div class="stat-value">GH₵ {{ "%.2f"|format(today_revenue) }}</div>
+            <div class="stat-label">Today's Revenue</div>
+            <div class="stat-sub"><i class="bi bi-calendar-event me-1"></i> {{ today_orders }} Orders today</div>
+        </div>
+    </div>
+
+    <!-- Active/Pending Orders -->
+    <div class="col-md-3">
+        <div class="stat-card bg-warning-gradient shadow-sm">
+            <i class="bi bi-clock-history stat-icon"></i>
+            <div class="stat-value">{{ pending_orders }}</div>
+            <div class="stat-label">Active Orders</div>
+            <div class="stat-sub"><i class="bi bi-hourglass-split me-1"></i> Open / In-Progress</div>
+        </div>
+    </div>
+
+    <!-- Table Availability -->
+    <div class="col-md-3">
+        <div class="stat-card bg-success-gradient shadow-sm">
+            <i class="bi bi-grid-3x3-gap stat-icon"></i>
+            <div class="stat-value">{{ available_tables }} / {{ total_tables }}</div>
+            <div class="stat-label">Available Tables</div>
+            <div class="stat-sub"><i class="bi bi-people me-1"></i> {{ total_tables - available_tables }} Currently Occupied</div>
+        </div>
+    </div>
+
+    <!-- Month Revenue -->
+    <div class="col-md-3">
+        <div class="stat-card bg-purple-gradient shadow-sm">
+            <i class="bi bi-graph-up-arrow stat-icon"></i>
+            <div class="stat-value">GH₵ {{ "%.2f"|format(month_revenue) }}</div>
+            <div class="stat-label">This Month's Revenue</div>
+            <div class="stat-sub"><i class="bi bi-receipt me-1"></i> {{ month_orders }} Total Orders</div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Main Grid ─────────────────────────────────────────────────────────── -->
+<div class="row g-4 mb-4">
+
+    <!-- Left Column: Recent Orders Table -->
+    <div class="col-lg-8">
+        <div class="card h-100 shadow-sm-custom">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-secondary"><i class="bi bi-list-stars me-2 text-primary-brand"></i>Recent Orders</h5>
+                <a href="{{ url_for('orders.index') }}" class="btn btn-sm btn-outline-secondary">
+                    View All <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Type</th>
+                            <th>Table / Guest</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Time</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if recent_orders %}
+                            {% for order in recent_orders %}
+                            <tr>
+                                <td>
+                                    <a href="{{ url_for('orders.view', order_id=order.id) }}" class="fw-bold text-dark">
+                                        {{ order.order_number }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark border">
+                                        <i class="bi bi-{% if order.order_type == 'Dine-In' %}cup-straw{% elif order.order_type == 'Takeaway' %}bag-check{% else %}truck{% endif %} me-1"></i>
+                                        {{ order.order_type }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if order.restaurant_table %}
+                                        <span class="fw-medium text-secondary"><i class="bi bi-grid me-1"></i>{{ order.restaurant_table.table_number }}</span>
+                                    {% elif order.customer %}
+                                        <span>{{ order.customer.full_name }}</span>
+                                    {% else %}
+                                        <span class="text-muted">Walk-in</span>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold text-dark">GH₵ {{ "%.2f"|format(order.total_amount) }}</td>
+                                <td>
+                                    <span class="badge badge-status-{{ order.status.lower().replace(' ', '-') }}">
+                                        {{ order.status }}
+                                    </span>
+                                </td>
+                                <td class="text-muted small">{{ order.created_at.strftime('%H:%M') }}</td>
+                                <td class="text-end">
+                                    <a href="{{ url_for('orders.view', order_id=order.id) }}" class="btn btn-sm btn-light border">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4 text-muted">
+                                    <i class="bi bi-inbox fs-3 d-block mb-1"></i> No orders recorded today yet.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Occupied Tables & Top Selling Menu Items -->
+    <div class="col-lg-4">
+        <!-- Active Occupied Tables -->
+        <div class="card shadow-sm-custom mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-secondary"><i class="bi bi-grid-3x3-gap me-2 text-warning"></i>Occupied Tables</h5>
+                <a href="{{ url_for('tables.index') }}" class="btn btn-sm btn-link text-decoration-none">Manage</a>
+            </div>
+            <div class="card-body p-3">
+                {% if occupied_tables %}
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for table in occupied_tables %}
+                        <div class="table-card occupied flex-grow-1 text-center py-2 px-3">
+                            <div class="table-num fs-5 fw-bold">{{ table.table_number }}</div>
+                            <div class="table-cap text-muted small"><i class="bi bi-people me-1"></i>Cap: {{ table.capacity }}</div>
+                            <span class="badge bg-danger mt-1">Occupied</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-3 text-muted">
+                        <i class="bi bi-check-circle text-success fs-3 d-block mb-1"></i> All tables are currently available!
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Top Menu Items This Month -->
+        <div class="card shadow-sm-custom">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 text-secondary"><i class="bi bi-award me-2 text-primary-brand"></i>Top Selling Dishes</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    {% if top_items %}
+                        {% for item_name, qty in top_items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <div class="d-flex align-items-center">
+                                <div class="badge rounded-circle bg-primary-light text-primary me-3 p-2 fw-bold" style="width:30px;height:30px;">
+                                    {{ loop.index }}
+                                </div>
+                                <span class="fw-medium text-dark">{{ item_name }}</span>
+                            </div>
+                            <span class="badge bg-secondary rounded-pill">{{ qty }} sold</span>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        <li class="list-group-item text-center text-muted py-3">No dish sales data yet.</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

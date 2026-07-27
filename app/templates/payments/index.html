@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Payments{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-cash-coin me-2 text-primary-brand"></i>Payment Transactions</h1>
+        <p class="text-muted mb-0">Record of processed customer payments and payment methods.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Filter Card -->
+<div class="card shadow-sm-custom mb-4">
+    <div class="card-body p-3">
+        <form method="GET" action="{{ url_for('payments.index') }}" class="row g-2 align-items-center">
+            <div class="col-md-9">
+                <select name="method" class="form-select">
+                    <option value="">All Payment Methods</option>
+                    <option value="Cash" {% if method_filter == 'Cash' %}selected{% endif %}>Cash</option>
+                    <option value="Mobile Money" {% if method_filter == 'Mobile Money' %}selected{% endif %}>Mobile Money</option>
+                    <option value="Card" {% if method_filter == 'Card' %}selected{% endif %}>Card</option>
+                    <option value="Complimentary" {% if method_filter == 'Complimentary' %}selected{% endif %}>Complimentary</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-secondary w-100"><i class="bi bi-filter"></i> Filter</button>
+                <a href="{{ url_for('payments.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Payments Table -->
+<div class="card shadow-sm-custom">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Order #</th>
+                    <th>Payment Method</th>
+                    <th>Amount Paid</th>
+                    <th>Change Given</th>
+                    <th>Reference</th>
+                    <th>Processed By</th>
+                    <th>Date &amp; Time</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if payments.items %}
+                    {% for p in payments.items %}
+                    <tr>
+                        <td class="fw-bold">
+                            <a href="{{ url_for('orders.view', order_id=p.order_id) }}" class="text-dark">
+                                {{ p.order.order_number }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge {% if p.payment_method == 'Cash' %}bg-success{% elif p.payment_method == 'Mobile Money' %}bg-warning text-dark{% elif p.payment_method == 'Card' %}bg-info text-dark{% else %}bg-secondary{% endif %}">
+                                <i class="bi bi-credit-card me-1"></i>{{ p.payment_method }}
+                            </span>
+                        </td>
+                        <td class="fw-bold text-success">GH₵ {{ "%.2f"|format(p.amount_paid) }}</td>
+                        <td>GH₵ {{ "%.2f"|format(p.change_given or 0) }}</td>
+                        <td>{{ p.reference or '-' }}</td>
+                        <td>{{ p.cashier.full_name if p.cashier else '-' }}</td>
+                        <td class="text-muted small">{{ p.paid_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="text-end">
+                            <a href="{{ url_for('payments.view', payment_id=p.id) }}" class="btn btn-sm btn-light border"><i class="bi bi-eye"></i></a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">No payments recorded yet.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if payments.pages > 1 %}
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+        <small class="text-muted">Page {{ payments.page }} of {{ payments.pages }}</small>
+        <ul class="pagination pagination-sm mb-0">
+            {% if payments.has_prev %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('payments.index', page=payments.prev_num, method=method_filter) }}">Previous</a></li>
+            {% endif %}
+            {% if payments.has_next %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('payments.index', page=payments.next_num, method=method_filter) }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

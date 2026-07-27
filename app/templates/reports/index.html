@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Reports &amp; Analytics{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-bar-chart-line me-2 text-primary-brand"></i>Reports &amp; Analytics</h1>
+        <p class="text-muted mb-0">Business performance metrics, sales breakdowns, and menu analytics.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4 justify-content-center">
+
+    <!-- Sales & Revenue Report -->
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm-custom h-100 p-3">
+            <div class="card-body text-center">
+                <div class="display-4 text-primary-brand mb-3"><i class="bi bi-cash-stack"></i></div>
+                <h4 class="fw-bold text-dark mb-2">Sales &amp; Revenue Report</h4>
+                <p class="text-muted small mb-4">Detailed breakdown of revenue over custom date ranges, daily sales trends, payment method split, and order type distribution.</p>
+                <a href="{{ url_for('reports.sales') }}" class="btn btn-primary w-100 py-2">
+                    <i class="bi bi-graph-up-arrow me-1"></i> Open Sales Report
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Menu Item Performance Report -->
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm-custom h-100 p-3">
+            <div class="card-body text-center">
+                <div class="display-4 text-success mb-3"><i class="bi bi-journal-text"></i></div>
+                <h4 class="fw-bold text-dark mb-2">Menu Item Performance</h4>
+                <p class="text-muted small mb-4">Dish popularity rankings, quantity sold per menu item, category revenue breakdown, and top-selling food items analysis.</p>
+                <a href="{{ url_for('reports.menu_performance') }}" class="btn btn-success w-100 py-2">
+                    <i class="bi bi-award me-1"></i> Open Menu Performance
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

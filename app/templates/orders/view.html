@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Order {{ order.order_number }}{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-receipt me-2 text-primary-brand"></i>Order {{ order.order_number }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('orders.index') }}">Orders</a></li>
+                <li class="breadcrumb-item active">{{ order.order_number }}</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="d-flex gap-2">
+        {% if not order.is_paid and order.status != 'Cancelled' %}
+        <a href="{{ url_for('payments.process', order_id=order.id) }}" class="btn btn-success">
+            <i class="bi bi-cash-coin me-1"></i> Process Payment
+        </a>
+        {% endif %}
+
+        {% if order.receipt %}
+        <a href="{{ url_for('receipts.view', receipt_id=order.receipt.id) }}" class="btn btn-outline-secondary">
+            <i class="bi bi-file-earmark-text me-1"></i> View Receipt
+        </a>
+        {% endif %}
+
+        {% if order.status not in ('Completed', 'Cancelled') %}
+        <a href="{{ url_for('orders.edit', order_id=order.id) }}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i> Edit Order
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Left Column: Items List -->
+    <div class="col-lg-8">
+        <div class="card shadow-sm-custom mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 text-secondary"><i class="bi bi-card-checklist me-2 text-primary-brand"></i>Order Items</h5>
+                <span class="badge badge-status-{{ order.status.lower().replace(' ', '-') }} fs-6">{{ order.status }}</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Category</th>
+                            <th>Unit Price</th>
+                            <th>Qty</th>
+                            <th class="text-end">Line Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.items %}
+                        <tr>
+                            <td class="fw-bold text-dark">{{ item.item_name }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ item.menu_item.category if item.menu_item else '-' }}</span></td>
+                            <td>GH₵ {{ "%.2f"|format(item.unit_price) }}</td>
+                            <td><span class="badge bg-secondary rounded-pill">x{{ item.quantity }}</span></td>
+                            <td class="text-end fw-bold">GH₵ {{ "%.2f"|format(item.line_total) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="bg-light">
+                        <tr>
+                            <td colspan="4" class="text-end fw-bold">Subtotal:</td>
+                            <td class="text-end fw-bold">GH₵ {{ "%.2f"|format(order.subtotal) }}</td>
+                        </tr>
+                        {% if order.tax_amount > 0 %}
+                        <tr>
+                            <td colspan="4" class="text-end fw-bold">Tax:</td>
+                            <td class="text-end fw-bold">GH₵ {{ "%.2f"|format(order.tax_amount) }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr class="fs-5">
+                            <td colspan="4" class="text-end fw-bold text-dark">Grand Total:</td>
+                            <td class="text-end fw-bold text-primary-brand">GH₵ {{ "%.2f"|format(order.total_amount) }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- Kitchen Notes -->
+        {% if order.notes %}
+        <div class="card shadow-sm-custom">
+            <div class="card-header bg-white">
+                <h6 class="mb-0 text-secondary"><i class="bi bi-sticky me-2 text-warning"></i>Kitchen Notes</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-0 text-dark">{{ order.notes }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right Column: Meta Information & Status Update -->
+    <div class="col-lg-4">
+        <!-- Status Updater Card -->
+        {% if order.status not in ('Completed', 'Cancelled') %}
+        <div class="card shadow-sm-custom mb-4 border-start border-4 border-primary">
+            <div class="card-header bg-white">
+                <h6 class="mb-0 text-secondary"><i class="bi bi-arrow-repeat me-2 text-primary"></i>Update Kitchen Status</h6>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('orders.update_status', order_id=order.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <select name="status" class="form-select">
+                            <option value="Open" {% if order.status == 'Open' %}selected{% endif %}>Open (Received)</option>
+                            <option value="In Progress" {% if order.status == 'In Progress' %}selected{% endif %}>In Progress (Preparing)</option>
+                            <option value="Ready" {% if order.status == 'Ready' %}selected{% endif %}>Ready (To Serve)</option>
+                            <option value="Completed" {% if order.status == 'Completed' %}selected{% endif %}>Completed (Paid &amp; Closed)</option>
+                            <option value="Cancelled" {% if order.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-circle me-1"></i> Update Status</button>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Order Meta Card -->
+        <div class="card shadow-sm-custom">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 text-secondary"><i class="bi bi-info-circle me-2"></i>Order Details</h5>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between py-3">
+                        <span class="text-muted">Order Type</span>
+                        <span class="fw-bold">{{ order.order_type }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between py-3">
+                        <span class="text-muted">Table Number</span>
+                        <span class="fw-bold">{{ order.restaurant_table.table_number if order.restaurant_table else 'N/A' }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between py-3">
+                        <span class="text-muted">Customer Name</span>
+                        <span class="fw-bold">{{ order.customer.full_name if order.customer else 'Walk-in' }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between py-3">
+                        <span class="text-muted">Server / Staff</span>
+                        <span class="fw-bold">{{ order.served_by.full_name if order.served_by else '-' }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between py-3">
+                        <span class="text-muted">Payment Status</span>
+                        {% if order.is_paid %}
+                            <span class="badge bg-success">Paid</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Unpaid</span>
+                        {% endif %}
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between py-3">
+                        <span class="text-muted">Created At</span>
+                        <span class="fw-bold">{{ order.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

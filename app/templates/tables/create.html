@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Add Table{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-plus-circle me-2 text-primary-brand"></i>Add Restaurant Table</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('tables.index') }}">Tables</a></li>
+                <li class="breadcrumb-item active">Add Table</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm-custom">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 text-secondary">Table Configuration</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('tables.create') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label for="table_number" class="form-label">Table Number / Label <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="table_number" name="table_number" required placeholder="e.g. T01, T02, VIP-1">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="capacity" class="form-label">Seating Capacity <span class="text-danger">*</span></label>
+                        <input type="number" min="1" max="50" class="form-control" id="capacity" name="capacity" value="4" required>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('tables.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i> Save Table</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

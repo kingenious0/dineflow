@@ -1,0 +1,9 @@
+"""
+Users Blueprint for DineFlow Restaurant Management System.
+"""
+
+from flask import Blueprint
+
+users_bp = Blueprint('users', __name__, url_prefix='/users')
+
+from app.users import routes  # noqa: E402, F401

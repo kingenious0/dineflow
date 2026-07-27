@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Customer - {{ customer.full_name }}{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-pencil-square me-2 text-primary-brand"></i>Edit Customer</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('customers.index') }}">Customers</a></li>
+                <li class="breadcrumb-item active">Edit {{ customer.full_name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm-custom">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 text-secondary">Edit Customer Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('customers.edit', customer_id=customer.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label for="full_name" class="form-label">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="full_name" name="full_name" value="{{ customer.full_name }}" required>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label for="phone_number" class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" id="phone_number" name="phone_number" value="{{ customer.phone_number or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ customer.email or '' }}">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="notes" class="form-label">Special Notes / Preferences</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3">{{ customer.notes or '' }}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('customers.index') }}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle me-1"></i> Update Customer</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

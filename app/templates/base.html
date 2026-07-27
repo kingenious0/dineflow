@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DineFlow — Restaurant Ordering &amp; Management System">
+    <title>{% block title %}DineFlow{% endblock %} | DineFlow Restaurant</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom Styles -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+{% if current_user.is_authenticated %}
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!--  SIDEBAR                                                            -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <i class="bi bi-cup-hot-fill me-2"></i>
+        <span>DineFlow</span>
+    </div>
+
+    <nav class="sidebar-nav">
+        <ul class="nav flex-column">
+
+            <li class="nav-section-label">MAIN</li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}"
+                   href="{{ url_for('dashboard.index') }}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+
+            <li class="nav-section-label">OPERATIONS</li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.blueprint == 'orders' %}active{% endif %}"
+                   href="{{ url_for('orders.index') }}">
+                    <i class="bi bi-receipt"></i> Orders
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.blueprint == 'tables' %}active{% endif %}"
+                   href="{{ url_for('tables.index') }}">
+                    <i class="bi bi-grid-3x3-gap"></i> Tables
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.blueprint == 'payments' %}active{% endif %}"
+                   href="{{ url_for('payments.index') }}">
+                    <i class="bi bi-cash-coin"></i> Payments
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.blueprint == 'receipts' %}active{% endif %}"
+                   href="{{ url_for('receipts.index') }}">
+                    <i class="bi bi-file-earmark-text"></i> Receipts
+                </a>
+            </li>
+
+            <li class="nav-section-label">MENU</li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.blueprint == 'menu' %}active{% endif %}"
+                   href="{{ url_for('menu.index') }}">
+                    <i class="bi bi-journal-text"></i> Menu Items
+                </a>
+            </li>
+
+            <li class="nav-section-label">PEOPLE</li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.blueprint == 'customers' %}active{% endif %}"
+                   href="{{ url_for('customers.index') }}">
+                    <i class="bi bi-people"></i> Customers
+                </a>
+            </li>
+
+            {% if current_user.is_administrator() %}
+            <li class="nav-item">
+                <a class="nav-link {% if request.blueprint == 'users' %}active{% endif %}"
+                   href="{{ url_for('users.index') }}">
+                    <i class="bi bi-person-gear"></i> Staff Users
+                </a>
+            </li>
+            {% endif %}
+
+            {% if current_user.is_manager() %}
+            <li class="nav-section-label">ANALYTICS</li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.blueprint == 'reports' %}active{% endif %}"
+                   href="{{ url_for('reports.index') }}">
+                    <i class="bi bi-bar-chart-line"></i> Reports
+                </a>
+            </li>
+            {% endif %}
+
+            {% if current_user.is_administrator() %}
+            <li class="nav-section-label">SYSTEM</li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.blueprint == 'settings' %}active{% endif %}"
+                   href="{{ url_for('settings.index') }}">
+                    <i class="bi bi-gear"></i> Settings
+                </a>
+            </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+        <small class="text-muted">v1.0.0 &copy; 2026</small>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!--  MAIN CONTENT AREA                                                  -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div class="main-wrapper" id="mainWrapper">
+
+    <!-- Top Navbar -->
+    <nav class="topnav">
+        <button class="btn btn-link sidebar-toggle p-0" id="sidebarToggle">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+
+        <div class="topnav-right">
+            <span class="badge rounded-pill bg-primary-subtle text-primary me-3">
+                <i class="bi bi-circle-fill text-success me-1" style="font-size:.5rem;"></i>
+                {{ current_user.role }}
+            </span>
+            <div class="dropdown">
+                <button class="btn btn-link dropdown-toggle text-decoration-none text-dark"
+                        data-bs-toggle="dropdown">
+                    <i class="bi bi-person-circle fs-5 me-1"></i>
+                    {{ current_user.full_name.split(' ')[0] }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><h6 class="dropdown-header">{{ current_user.email }}</h6></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <a class="dropdown-item" href="{{ url_for('auth.change_password') }}">
+                            <i class="bi bi-key me-2"></i> Change Password
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}">
+                            <i class="bi bi-box-arrow-right me-2"></i> Sign Out
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <main class="page-content">
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                <i class="bi bi-{% if category == 'success' %}check-circle{% elif category == 'danger' %}exclamation-triangle{% elif category == 'warning' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Page Header -->
+        {% block page_header %}{% endblock %}
+
+        <!-- Main Content Block -->
+        {% block content %}{% endblock %}
+
+    </main>
+</div>
+
+{% else %}
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!--  UNAUTHENTICATED CONTENT (Login page etc)                           -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+{% block auth_content %}{% endblock %}
+{% endif %}
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Chart.js (for reports / dashboard) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<!-- App JS -->
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

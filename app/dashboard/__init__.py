@@ -1,0 +1,9 @@
+"""
+Dashboard Blueprint for DineFlow Restaurant Management System.
+"""
+
+from flask import Blueprint
+
+dashboard_bp = Blueprint('dashboard', __name__)
+
+from app.dashboard import routes  # noqa: E402, F401

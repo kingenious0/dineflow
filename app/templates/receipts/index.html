@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Receipts{% endblock %}
+
+{% block page_header %}
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-file-earmark-text me-2 text-primary-brand"></i>Receipts</h1>
+        <p class="text-muted mb-0">Issued customer sales receipts archive.</p>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Search Card -->
+<div class="card shadow-sm-custom mb-4">
+    <div class="card-body p-3">
+        <form method="GET" action="{{ url_for('receipts.index') }}" class="row g-2 align-items-center">
+            <div class="col-md-9">
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" class="form-control" placeholder="Search by receipt number..." value="{{ search }}">
+                </div>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-secondary w-100"><i class="bi bi-search"></i> Search</button>
+                <a href="{{ url_for('receipts.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-circle"></i></a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Receipts Table -->
+<div class="card shadow-sm-custom">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Receipt #</th>
+                    <th>Order #</th>
+                    <th>Payment Method</th>
+                    <th>Total Amount</th>
+                    <th>Issued By</th>
+                    <th>Date &amp; Time</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if receipts.items %}
+                    {% for r in receipts.items %}
+                    <tr>
+                        <td class="fw-bold text-dark">{{ r.receipt_number }}</td>
+                        <td>
+                            <a href="{{ url_for('orders.view', order_id=r.order_id) }}" class="text-secondary fw-medium">
+                                {{ r.order.order_number }}
+                            </a>
+                        </td>
+                        <td><span class="badge bg-light text-dark border">{{ r.payment_method }}</span></td>
+                        <td class="fw-bold text-success">GH₵ {{ "%.2f"|format(r.total_amount) }}</td>
+                        <td>{{ r.cashier.full_name if r.cashier else '-' }}</td>
+                        <td class="text-muted small">{{ r.issued_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('receipts.view', receipt_id=r.id) }}" class="btn btn-light border" title="View"><i class="bi bi-eye"></i></a>
+                                <a href="{{ url_for('receipts.print_receipt', receipt_id=r.id) }}" target="_blank" class="btn btn-light border" title="Print"><i class="bi bi-printer"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">No receipts found.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if receipts.pages > 1 %}
+    <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+        <small class="text-muted">Page {{ receipts.page }} of {{ receipts.pages }}</small>
+        <ul class="pagination pagination-sm mb-0">
+            {% if receipts.has_prev %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('receipts.index', page=receipts.prev_num, search=search) }}">Previous</a></li>
+            {% endif %}
+            {% if receipts.has_next %}
+            <li class="page-item"><a class="page-link" href="{{ url_for('receipts.index', page=receipts.next_num, search=search) }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
